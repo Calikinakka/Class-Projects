@@ -1,0 +1,217 @@
+' Program Name: Depreciation
+' Justin Cook
+'November 15 2018
+'This application reads from the intentory.txt text file to pull items, uses entered and selected information to calculate
+'depreciate of the inventory
+
+Option Strict On
+
+Public Class frmDepreciation
+
+    'Class variables
+    Private _intLifeOfItems As Integer = 5
+    Private _strItemID(_intSizeOfArray) As String
+    Private _decInitialPrice(_intSizeOfArray) As Decimal
+    Private _intQuantity(_intSizeOfArray) As Integer
+    Public Shared _intSizeOfArray As Integer = 7
+    Public Shared _strInventoryItem(_intSizeOfArray) As String
+
+    Private Sub frmDepreciation_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        'frmDepreciation load event reads the inventory text file and fills the list box
+
+        'Intializes the reader
+        Dim objReader As IO.StreamReader
+        Dim strLocationAndNameOfFile As String = "f:\inventory.txt"
+        Dim intCount As Integer = 0
+        Dim intFill As Integer
+        Dim strFileError As String = "The file is not available. Please restart when the file is available."
+
+        'If else statement to verify the file exists
+        If IO.File.Exists(strLocationAndNameOfFile) Then
+            objReader = IO.File.OpenText(strLocationAndNameOfFile)
+            'read the file line by line until complete
+            Do While objReader.Peek <> -1
+                _strInventoryItem(intCount) = objReader.ReadLine()
+                _strItemID(intCount) = objReader.ReadLine()
+                _decInitialPrice(intCount) = Convert.ToDecimal(objReader.ReadLine())
+                _intQuantity(intCount) = Convert.ToInt32(objReader.ReadLine())
+                intCount += 1
+            Loop
+            objReader.Close()
+
+            'The listbox object is filled with inventory IDs
+            For intFill = 0 To (_strItemID.Length - 1)
+                lstInventoryId.Items.Add(_strItemID(intFill))
+            Next
+        Else
+            MsgBox(strFileError, , "Error")
+            Close()
+        End If
+    End Sub
+
+    Private Sub btnCalculateDepreciation_Click(sender As Object, e As EventArgs) Handles btnCalculateDepreciation.Click
+        'Button click calls the depreciation sub proceedures
+        'Variables
+        Dim intSelectedItemId As Integer
+        Dim strMissingSelection As String = "Missing Selection"
+        Dim strSelectDepreciationMethodError As String = "Select a Drepreciation Method"
+        Dim strSelectInventoryItemIdError As String = "Select an Inventory Item ID"
+        'If an item is selected and a depreciation method is checked call the proceedure
+        If lstInventoryId.SelectedIndex >= 0 Then
+            intSelectedItemId = lstInventoryId.SelectedIndex
+            If radStraightLine.Checked Then
+                StraightLineDepreciation(intSelectedItemId)
+            ElseIf radDoubleDeclining.checked Then
+                DoubleDecliningDepreciation(intSelectedItemId)
+            Else
+                MsgBox(strSelectDepreciationMethodError, , "Error")
+            End If
+        Else
+            MsgBox(strSelectInventoryItemIdError, , "Error")
+        End If
+    End Sub
+
+    Private Sub StraightLineDepreciation(ByRef intItemId As Integer)
+        'This sub proceedure computes the depreciation in Straight Line depreciation for the items selected
+        'variables
+        Dim intStraightPresentYear As Integer
+        Dim decStraightPresentYearValue As Decimal = 0
+        Dim decStraightDepreciation As Decimal
+        Dim decStraightTotal As Decimal
+        Dim strDepreciationItem As String = "The Depreciation of the Items: "
+        Dim strQuantityMessage As String = "Quantity: "
+
+        'MakeObjectsVisible displays the hidden form objects after selections have been made and button clicked
+        MakeObjectsVisible()
+        'displays items and quantity of the selected item
+        lblItem.Text = strDepreciationItem & _strInventoryItem(intItemId)
+        lblQuantity.Text = strQuantityMessage & _intQuantity(intItemId).ToString()
+        'formula for straightline depreciation
+        decStraightDepreciation = _decInitialPrice(intItemId) / _intLifeOfItems
+        decStraightPresentYearValue = _decInitialPrice(intItemId)
+        'loop repeats for life of items
+        For intStraightPresentYear = 1 To _intLifeOfItems
+            'accumulates total depreciation
+            decStraightTotal += decStraightDepreciation
+            'displays the depreciation amounts
+            lstYear.Items.Add(intStraightPresentYear.ToString())
+            lstPresentValue.Items.Add(decStraightPresentYearValue.ToString("C"))
+            lstYearDepreciation.Items.Add(decStraightDepreciation.ToString("C"))
+            lstTotalDepreciation.Items.Add(decStraightTotal.ToString("C"))
+            decStraightPresentYearValue -= decStraightDepreciation
+        Next
+    End Sub
+
+    Private Sub DoubleDecliningDepreciation(ByVal intItemId As Integer)
+        'This sub procedure computes and displays the double declining balance of selected items
+        Dim intDoublePresentYear As Integer
+        Dim decDoublePresentYearValue As Decimal = 0
+        Dim decDoubleDepreciation As Decimal
+        Dim decDoubleTotal As Decimal
+        Dim strDepreciationItem As String = "The Depreciation of the Items: "
+        Dim strQuantityMessage As String = "Quantity: "
+
+        'The MakeObjectsVisible makes the remaining parts of the form visible once items have been selected
+        MakeObjectsVisible()
+        'displays items and quantity of the selected item
+        lblItem.Text = strDepreciationItem & _strInventoryItem(intItemId)
+        lblQuantity.Text = strQuantityMessage & _intQuantity(intItemId).ToString()
+        decDoublePresentYearValue = _decInitialPrice(intItemId)
+        'the loops repeats for the life of the item
+        For intDoublePresentYear = 1 To _intLifeOfItems
+            'the formula for double depreciation as follows
+            decDoubleDepreciation = (decDoublePresentYearValue * 2D) / _intLifeOfItems
+            'accumulates total depreciation
+            decDoubleTotal += decDoubleDepreciation
+            'displays results
+            lstYear.Items.Add(intDoublePresentYear.ToString())
+            lstPresentValue.Items.Add(decDoublePresentYearValue.ToString("C"))
+            lstYearDepreciation.Items.Add(decDoubleDepreciation.ToString("C"))
+            lstTotalDepreciation.Items.Add(decDoubleTotal.ToString("C"))
+            decDoublePresentYearValue -= decDoubleDepreciation
+        Next
+    End Sub
+
+    Private Sub MakeObjectsVisible()
+        'hidden items made visible
+        lblItem.Visible = True
+        lblQuantity.Visible = True
+        lblYear.Visible = True
+        lblPresentValue.Visible = True
+        lblTotalDepreciation.Visible = True
+        lblYearDepreciation.Visible = True
+        lstYear.Visible = True
+        lstYearDepreciation.Visible = True
+        lstTotalDepreciation.Visible = True
+        lstPresentValue.Visible = True
+        'previous data entered is cleared
+        lstYear.Items.Clear()
+        lstYearDepreciation.Items.Clear()
+        lstPresentValue.Items.Clear()
+        lstTotalDepreciation.Items.Clear()
+
+    End Sub
+
+    Private Sub mnuDisplay_Click(sender As Object, e As EventArgs) Handles mnuDisplay.Click
+        'the mnuDisplay  click event creates and instance of the frmDisplayInventory
+        Dim frmSecond As New frmDisplayInventory
+
+        'hides this form and shows the Display Inventory form
+        Hide()
+        frmSecond.ShowDialog()
+
+    End Sub
+
+    Private Sub mnuClear_Click(sender As Object, e As EventArgs) Handles mnuClear.Click
+        'The mnuClear clears all entries and resets the form for new use
+        lstInventoryId.SelectedIndex = -1
+        radDoubleDeclining.Checked = False
+        radStraightLine.Checked = False
+        lblItem.Visible = False
+        lblQuantity.Visible = False
+        lblYear.Visible = False
+        lblPresentValue.Visible = False
+        lblTotalDepreciation.Visible = False
+        lblYearDepreciation.Visible = False
+        lstYear.Visible = False
+        lstYearDepreciation.Visible = False
+        lstTotalDepreciation.Visible = False
+        lstPresentValue.Visible = False
+        'previous data entered is cleared
+        lstYear.Items.Clear()
+        lstYearDepreciation.Items.Clear()
+        lstPresentValue.Items.Clear()
+        lstTotalDepreciation.Items.Clear()
+    End Sub
+
+    Private Sub mnuExit_Click(sender As Object, e As EventArgs) Handles mnuExit.Click
+        'this menu option exits the programs
+        Application.Exit()
+
+    End Sub
+
+End Class
+
+
+Public Class frmDisplayInventory
+    Private Sub frmDisplayInventory_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        'This is the secondary form that displays the sorted items
+        Dim strItem As String
+        'sorts the _strInventoryItems array
+        Array.Sort(frmDepreciation._strInventoryItem)
+
+        'displays the inventory items array
+        For Each strItem In frmDepreciation._strInventoryItem
+            lstDisplay.Items.Add(strItem)
+        Next
+    End Sub
+
+    Private Sub btnReturn_Click(sender As Object, e As EventArgs) Handles btnReturn.Click
+        'this sub opens the first form
+
+        Dim frmFirst As New frmDepreciation
+        Hide()
+        frmFirst.ShowDialog()
+
+    End Sub
+End Class

@@ -1,0 +1,54 @@
+﻿' PROGRAM NAME  Pizza Slection
+
+Public Class FrmPizzaSelection
+    Private Sub FrmPizzaSelection_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+    End Sub
+
+    Private Sub lblHeading_Click(sender As Object, e As EventArgs) Handles lblHeading.Click
+
+    End Sub
+
+    Private Sub btnDeepDish_Click(sender As Object, e As EventArgs) Handles btnDeepDish.Click
+        picDeepDish.Visible = True
+        picThinCrust.Visible = False
+        btnSelectPizza.Enabled = True
+
+        'The preceding code sets the deep dish pizza pic to visible, disables the thin crust
+        'It turns on the ability to interact with the Select Pizza button
+
+    End Sub
+
+    Private Sub btnThinCrust_Click(sender As Object, e As EventArgs) Handles btnThinCrust.Click
+        picThinCrust.Visible = True
+        picDeepDish.Visible = False
+        btnSelectPizza.Enabled = True
+
+        'The preceding set the thin crust pic to visible and disable the deep dish
+        'It turns on the ability to interact with the Select Pizza button
+
+    End Sub
+
+    Private Sub btnExit_Click(sender As Object, e As EventArgs) Handles btnExit.Click
+        Close()
+        'The Exit button closes the application
+
+    End Sub
+
+    Private Sub btnSelectPizza_Click(sender As Object, e As EventArgs) Handles btnSelectPizza.Click
+        lblConfirmation.Visible = True
+        btnExit.Enabled = True
+        btnDeepDish.Enabled = False
+        btnThinCrust.Enabled = False
+        lblInstructions.Visible = False
+        btnSelectPizza.Enabled = False
+        'hides the instructions, presents the confirmation, enabled the exit button
+        'disables the Select Pizza option
+
+
+    End Sub
+
+    Private Sub lblConfirmation_Click(sender As Object, e As EventArgs) Handles lblConfirmation.Click
+
+    End Sub
+End Class

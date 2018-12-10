@@ -1,0 +1,196 @@
+'Program Name: Alamo Tours
+'Justin Cook
+'November 9, 2018
+'This program allows the user to select the tour they wish to go on, select the number of tickets and weekday or weekend.
+'Then it provides the sub total, taxes and then the grand total.
+'WeekDay has a 10% discount, taxes are 12%
+
+Option Strict On
+
+Public Class frmTours
+
+    'class level variables that gets referenced multiple times
+    Private _decTaxes As Decimal = 0.12D
+    Private _decTaxAmount As Decimal
+    Private _decSubTotal As Decimal
+    Private _decFinalTotal As Decimal
+
+
+    Private Sub cboTour_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboTour.SelectedIndexChanged
+        'Allows the user to select the tour they wish to go on. It then calls the correct procedure for cost with applicable discounts and taxes
+        Dim intTourChoice As Integer
+        intTourChoice = cboTour.SelectedIndex
+
+        'Sets the next section to visible
+        lblTickets.Visible = True
+        txtTickets.Visible = True
+        radWeekday.Visible = True
+        radWeekend.Visible = True
+        btnCalculateCost.Visible = True
+        'Clears values for cost section
+        radWeekday.Checked = False
+        radWeekend.Checked = False
+        lblTaxAmount.Text = ""
+        lblSubTotalAmount.Text = ""
+        lblFinalTotalAmount.Text = ""
+        'Puts cursor in the number of tickets box
+        txtTickets.Focus()
+        txtTickets.Clear()
+
+    End Sub
+
+    Private Sub AlamoStoryCost(ByVal intNumberOfTickets As Integer)
+        'Function for the Alamo Story tour. Verifies that the weekday radio is checked to give discount, otherwise it charges normal price
+        Dim decDiscount As Decimal = 1D
+        If radWeekday.Checked = True Then
+            decDiscount = 0.9D
+        End If
+        _decSubTotal = 19 * intNumberOfTickets * decDiscount
+        _decTaxAmount = _decSubTotal * _decTaxes
+        _decFinalTotal = _decSubTotal + _decTaxAmount
+
+        Return
+
+    End Sub
+
+    Private Sub AlamoStoryBattlegroundCost(ByVal intNumberOfTickets As Integer)
+        'Function for the Alamo Story With Battleground Tour tour. Verifies that the weekday radio is checked to give discount, otherwise it charges normal price
+        Dim decDiscount As Decimal = 1D
+        If radWeekday.Checked = True Then
+            decDiscount = 0.9D
+        End If
+        _decSubTotal = 29 * intNumberOfTickets * decDiscount
+        _decTaxAmount = _decSubTotal * _decTaxes
+        _decFinalTotal = _decSubTotal + _decTaxAmount
+        Return
+
+
+    End Sub
+
+    Private Sub MissionTrailCost(ByVal intNumberOfTickets As Integer)
+        'Function for the Mission Trail tour. Verifies that the weekday radio is checked to give discount, otherwise it charges normal price
+        Dim decDiscount As Decimal = 1D
+        If radWeekday.Checked = True Then
+            decDiscount = 0.9D
+        End If
+        _decSubTotal = 49 * intNumberOfTickets * decDiscount
+        _decTaxAmount = _decSubTotal * _decTaxes
+        _decFinalTotal = _decSubTotal + _decTaxAmount
+        Return
+
+    End Sub
+
+
+    Private Sub btnCalculateCost_Click(sender As Object, e As EventArgs) Handles btnCalculateCost.Click
+        'Find the cost of the selected tour, number of tickets, weekend or weekday and tax.
+        'Variables within this fuction and passed to others
+        Dim intNumberOfTickets As Integer
+        Dim intTourChoice As Integer
+        Dim blnNumberofTicketsIsValid As Boolean = False
+        Dim blnDayChoiceIsValid As Boolean = False
+
+
+        'Calls the fuction to make sure the number of tour tickets is valid and whether weekend or weekday was selected.
+        blnNumberofTicketsIsValid = ValidateNumberOfTickets()
+        blnDayChoiceIsValid = ValidateDiscount()
+
+        If blnNumberofTicketsIsValid And blnDayChoiceIsValid Then
+            'if both tickets are entered and weekday/end is selected, function will calculate cost
+            intNumberOfTickets = Convert.ToInt32(txtTickets.Text)
+            intTourChoice = cboTour.SelectedIndex
+            Select Case intTourChoice
+                Case 0
+                    AlamoStoryCost(intNumberOfTickets)
+                Case 1
+                    AlamoStoryBattlegroundCost(intNumberOfTickets)
+                Case 2
+                    MissionTrailCost(intNumberOfTickets)
+            End Select
+            lblSubTotalAmount.Text = _decSubTotal.ToString("C")
+            lblTaxAmount.Text = _decTaxAmount.ToString("C")
+            lblFinalTotalAmount.Text = _decFinalTotal.ToString("C")
+            lblFinal.Visible = True
+            lblFinalTotalAmount.Visible = True
+            lblSubTotal.Visible = True
+            lblSubTotalAmount.Visible = True
+            lblTax.Visible = True
+            lblTaxAmount.Visible = True
+        Else
+            'If both tickets and week not selected, button will not return nor make visible the results and will clear the field and uncheck the radials
+            txtTickets.Clear()
+            txtTickets.Focus()
+            radWeekday.Checked = False
+            radWeekend.Checked = False
+        End If
+    End Sub
+
+
+    Private Function ValidateNumberOfTickets() As Boolean
+        'this function validates the number of tickets purchased
+        Dim intTicketNumber As Integer
+        Dim blnValidityCheck As Boolean = False
+        Dim strTicketMessage As String = "Enter the number of tickets needed (1-10) "
+        Dim strTicketMessageTitle As String = "Error"
+        'Error check for the number of tickets to make sure invalid entry is caught
+        Try
+            intTicketNumber = Convert.ToInt32(txtTickets.Text)
+            If intTicketNumber >= 1 Then
+                blnValidityCheck = True
+            Else
+                MsgBox(strTicketMessage, , strTicketMessageTitle)
+                txtTickets.Clear()
+                txtTickets.Focus()
+            End If
+        Catch Exception As FormatException
+            MsgBox(strTicketMessage, , strTicketMessageTitle)
+            txtTickets.Clear()
+            txtTickets.Focus()
+        Catch Exception As OverflowException
+            MsgBox(strTicketMessage, , strTicketMessageTitle)
+            txtTickets.Clear()
+            txtTickets.Focus()
+        Catch Exception As SystemException
+            MsgBox(strTicketMessage, , strTicketMessageTitle)
+            txtTickets.Clear()
+            txtTickets.Focus()
+        End Try
+        Return blnValidityCheck
+
+    End Function
+
+    Private Function ValidateDiscount() As Boolean
+        'this function will return whether or not the selected days are discounted or not, and make sure a selection is made
+        Dim strSelection As String = "Select Weekday or Weekend"
+        Dim strSelectionTitle As String = "Error"
+        Dim blnValidityCheck As Boolean = False
+
+        Try
+            If radWeekday.Checked = True Or radWeekend.Checked = True Then
+                blnValidityCheck = True
+            ElseIf radWeekday.Checked = False And radWeekend.Checked = False Then
+                blnValidityCheck = False
+                MsgBox(strSelection, , strSelectionTitle)
+            End If
+        Catch Exception As FormatException
+            MsgBox(strSelection, , strSelectionTitle)
+            radWeekday.Checked = False
+            radWeekend.Checked = False
+        Catch exception As OverflowException
+            MsgBox(strSelection, , strSelectionTitle)
+            radWeekday.Checked = False
+            radWeekend.Checked = False
+        Catch exception As SystemException
+            MsgBox(strSelection, , strSelectionTitle)
+            radWeekday.Checked = False
+            radWeekend.Checked = False
+        End Try
+
+        Return blnValidityCheck
+
+    End Function
+
+    Private Sub frmTours_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        'holds the splash screen up for 5 seconds
+        Threading.Thread.Sleep(5000)
+    End Sub
+End Class
